@@ -9,78 +9,42 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sync"
+	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/h2non/filetype"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
-	"github.com/schollz/progressbar/v3"
 	"github.com/viney-shih/goroutines"
 )
 
 func main() {
-	/*
-		imageflow_tool v1/build --json examples/export_4_sizes/export_4_sizes.json
-		        --in waterhouse.jpg
-		        --out 1 waterhouse_w1600.jpg
-		              2 waterhouse_w1200.jpg
-		              3 waterhouse_w800.jpg
-		              4 waterhouse_w400.jpg
-		        --response operation_result.json
-
-	*/
-
-	//valueCmd := map[int][]string{}
-
-	//valueCmd[1] = []string{"v1/build", "--json", "./config.json"}
-	//valueCmd[2] = []string{"--in", "./demoImg/3489", "./demoImg/3491"}
-	//valueCmd[3] = []string{"--out", "1", "result/3489_50.jpg", "3", "result/3661_50.jpg"}
-	//valueCmd[4] = []string{"--response", "operation_result.json"}
-
-	//io := make([]Io, 0)
-
-	//var (
-	//cmd *exec.Cmd
-	//sum []string
-	//)
-
-	//for i := 1; i < 5; i++ {
-	//sum = append(sum, valueCmd[i]...)
-	//}
-	//cmd = exec.Command("imageflow_tool", sum...)
-	//spew.Dump(cmd)
-
-	//_, err := cmd.CombinedOutput()
-	//spew.Dump(err)
-
+	start := time.Now()
+	spew.Dump(start)
 	path, _ := os.Getwd()
 
 	files, _ := ioutil.ReadDir(path + "/demoImg")
-	WebpBar := NewBar(int64(len(files)))
-	//MainBar := NewBar(int64(len(files)))
-
-	wgA := new(sync.WaitGroup)
-	wgB := new(sync.WaitGroup)
-
-	//p := goroutines.NewPool(20)
 
 	length := len(files)
-	b := goroutines.NewBatch(2, goroutines.WithBatchSize(2))
-	c := goroutines.NewBatch(5, goroutines.WithBatchSize(length))
-	defer b.Close()
+	batch := goroutines.NewBatch(10, goroutines.WithBatchSize(length))
+	defer func() {
+		batch.Close()
+		end := time.Now()
+		spew.Dump(end.Sub(start))
+	}()
 
-	fileA := files[:length/2]
-	fileB := files[length/2:]
+	for i, fileInfo := range files {
+		tmp := fileInfo
+		idx := i
+		batch.Queue(func() (interface{}, error) {
+			spew.Dump(tmp.Name())
 
-	b.Queue(func() (interface{}, error) {
-		for i, fileInfo := range fileA {
-
-			img, err := ImgDecode(fileInfo)
+			img, err := ImgDecode(tmp)
 			if err != nil {
 				log.Fatalln(err)
 			}
 
-			output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
+			output, err := os.Create("./result/" + tmp.Name() + ".webp")
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -91,66 +55,18 @@ func main() {
 				log.Fatalln(err)
 			}
 
-			wgA.Add(1)
-			c.Queue(func() (interface{}, error) {
-				Img2Webp(output, img, options, wgA, WebpBar)
-				return nil, nil
-			})
-			fmt.Println(i)
-			//MainBar.Add(1)
-		}
-		wgA.Wait()
-		return nil, nil
-	})
+			Img2Webp(output, img, options)
 
-	b.Queue(func() (interface{}, error) {
-		for i, fileInfo := range fileB {
+			fmt.Println(idx)
+			return nil, nil
+		})
+	}
 
-			img, err := ImgDecode(fileInfo)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer output.Close()
-
-			options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 75)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			wgB.Add(1)
-			c.Queue(func() (interface{}, error) {
-				Img2Webp(output, img, options, wgB, WebpBar)
-				return nil, nil
-			})
-			//MainBar.Add(1)
-			fmt.Println(i)
-		}
-
-		wgB.Wait()
-		return nil, nil
-	})
-
-	b.QueueComplete()
-	//wgA.Wait()
-	//wgB.Wait()
+	batch.QueueComplete()
 
 }
 
-func NewBar(length int64) *progressbar.ProgressBar {
-
-	bar := progressbar.Default(length)
-	return bar
-
-}
-
-func Img2Webp(w io.Writer, src image.Image, options *encoder.Options, wg *sync.WaitGroup, bar *progressbar.ProgressBar) {
-	defer wg.Done()
-	defer bar.Add(1)
+func Img2Webp(w io.Writer, src image.Image, options *encoder.Options) {
 	if err := webp.Encode(w, src, options); err != nil {
 		log.Fatalln(err)
 	}
