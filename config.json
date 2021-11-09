@@ -1,0 +1,75 @@
+{
+  "io": [
+    {
+      "io_id": 0,
+      "direction": "in",
+      "io": "placeholder"
+    },
+    {
+      "io_id": 1,
+      "direction": "out",
+      "io": "placeholder"
+    },
+    {
+      "io_id": 2,
+      "direction": "in",
+      "io": "placeholder"
+    },
+    {
+      "io_id": 3,
+      "direction": "out",
+      "io": "placeholder"
+    }
+  ],
+  "framewise": {
+    "graph":{
+      "nodes":{
+        "0":{
+          "decode":{
+            "io_id":0
+          }
+        },
+        "1":{
+          "decode":{
+            "io_id":2
+          }
+        },
+        "2":{
+          "encode": {
+            "io_id": 1,
+            "preset": {
+              "mozjpeg": {
+                "quality": 50,
+                "progressive":false
+              }
+            }
+          }
+        },
+        "3":{
+          "encode": {
+            "io_id": 3,
+            "preset": {
+              "mozjpeg": {
+                "quality": 50,
+                "progressive":false
+              }
+            }
+          }
+        }
+      },
+      "edges": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "input"
+        },
+        {
+          "from": 1,
+          "to": 3,
+          "kind": "input"
+        }
+      ]
+    }
+  }
+}
+
