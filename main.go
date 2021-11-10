@@ -49,12 +49,11 @@ func main() {
 
 			ioutil.WriteFile("./result/"+fileName+".webp", im, 0644)
 
-			MainBar.Add(1)
-
 			vipImg.Close()
 
 			return nil, nil
 		}()
+		MainBar.Add(1)
 
 	}
 
