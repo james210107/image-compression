@@ -13,7 +13,6 @@ import (
 func main() {
 	quality := flag.Int("q", 70, "Quality(int): default 70")
 	woker := flag.Int("w", 4, "Number of Goroutine run at the same time(int): default 4")
-	compression := flag.Int("c", 6, "compression(int): default 6")
 
 	path, _ := os.Getwd()
 	files, _ := ioutil.ReadDir(path + "/demoImg")
@@ -31,7 +30,6 @@ func main() {
 
 	ep := vips.NewDefaultWEBPExportParams()
 	ep.Quality = *quality
-	ep.Compression = *compression
 	ep.Lossless = false
 	ep.Effort = 0
 
