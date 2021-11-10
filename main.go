@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	vips "github.com/davidbyttow/govips/v2"
 	"github.com/h2non/filetype"
 	"github.com/kolesa-team/go-webp/encoder"
 	"github.com/kolesa-team/go-webp/webp"
@@ -20,78 +21,64 @@ import (
 )
 
 func main() {
-	/*
-		imageflow_tool v1/build --json examples/export_4_sizes/export_4_sizes.json
-		        --in waterhouse.jpg
-		        --out 1 waterhouse_w1600.jpg
-		              2 waterhouse_w1200.jpg
-		              3 waterhouse_w800.jpg
-		              4 waterhouse_w400.jpg
-		        --response operation_result.json
-
-	*/
-
-	//valueCmd := map[int][]string{}
-
-	//valueCmd[1] = []string{"v1/build", "--json", "./config.json"}
-	//valueCmd[2] = []string{"--in", "./demoImg/3489", "./demoImg/3491"}
-	//valueCmd[3] = []string{"--out", "1", "result/3489_50.jpg", "3", "result/3661_50.jpg"}
-	//valueCmd[4] = []string{"--response", "operation_result.json"}
-
-	//io := make([]Io, 0)
-
-	//var (
-	//cmd *exec.Cmd
-	//sum []string
-	//)
-
-	//for i := 1; i < 5; i++ {
-	//sum = append(sum, valueCmd[i]...)
-	//}
-	//cmd = exec.Command("imageflow_tool", sum...)
-	//spew.Dump(cmd)
-
-	//_, err := cmd.CombinedOutput()
-	//spew.Dump(err)
-
 	path, _ := os.Getwd()
 
 	files, _ := ioutil.ReadDir(path + "/demoImg")
-	WebpBar := NewBar(int64(len(files)))
-	//MainBar := NewBar(int64(len(files)))
+	//WebpBar := NewBar(int64(len(files)))
+	MainBar := NewBar(int64(len(files)))
 
 	wgA := new(sync.WaitGroup)
 
 	//p := goroutines.NewPool(20)
 
+	vips.Startup(nil)
+	defer vips.Shutdown()
+
 	length := len(files)
-	c := goroutines.NewBatch(5, goroutines.WithBatchSize(length))
+	c := goroutines.NewBatch(8, goroutines.WithBatchSize(length))
 	defer c.Close()
 
 	for _, fileInfo := range files {
 
-		img, err := ImgDecode(fileInfo)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
-		output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer output.Close()
-
-		options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 50)
-		if err != nil {
-			log.Fatalln(err)
-		}
-
+		tmp := fileInfo.Name()
 		wgA.Add(1)
+		vipImg, _ := vips.NewImageFromFile("./demoImg/" + fileInfo.Name())
+
+		vipImg.AutoRotate()
+
+		ep := vips.NewDefaultWEBPExportParams()
+		ep.Quality = 50
+		ep.Compression = 6
+		ep.Lossless = false
+		ep.Effort = 0
+
 		c.Queue(func() (interface{}, error) {
-			Img2Webp(output, img, options, wgA, WebpBar)
+			im, _, err := vipImg.Export(ep)
+
+			//img, err := ImgDecode(fileInfo)
+			//if err != nil {
+			//log.Fatalln(err)
+			//}
+
+			output, err := os.Create("./result/" + tmp + ".webp")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer output.Close()
+
+			//options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 50)
+			//if err != nil {
+			//log.Fatalln(err)
+			//}
+
+			ioutil.WriteFile("./result/"+tmp+".webp", im, 0644)
+
+			MainBar.Add(1)
+			//Img2Webp(output, img, options, wgA, WebpBar)
+			vipImg.Close()
 			return nil, nil
 		})
-		//MainBar.Add(1)
+
 	}
 	wgA.Wait()
 	c.QueueComplete()
