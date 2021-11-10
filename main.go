@@ -30,7 +30,7 @@ func main() {
 	ep.Lossless = false
 	ep.Effort = 0
 
-	limit := make(chan struct{}, 10)
+	limit := make(chan struct{}, 4)
 
 	for _, fileInfo := range files {
 		limit <- struct{}{}
@@ -54,7 +54,6 @@ func main() {
 			return nil, nil
 		}()
 		MainBar.Add(1)
-
 	}
 
 	wgA.Wait()
