@@ -59,7 +59,7 @@ func main() {
 	}
 
 	wgA.Wait()
-	c.QueueComplete()
+	//c.QueueComplete()
 }
 
 func NewBar(length int64) *progressbar.ProgressBar {
