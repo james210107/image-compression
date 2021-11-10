@@ -24,7 +24,9 @@ func main() {
 
 	wgA := new(sync.WaitGroup)
 
-	vips.Startup(nil)
+	vips.Startup(&vips.Config{
+		ConcurrencyLevel: 2,
+	})
 	defer vips.Shutdown()
 
 	//c := goroutines.NewBatch(4, goroutines.WithBatchSize(length))
