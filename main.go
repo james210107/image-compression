@@ -31,13 +31,20 @@ func main() {
 	ep.Lossless = false
 	ep.Effort = 0
 
+	limit := make(chan struct{}, 10)
+
 	for _, fileInfo := range files {
+		limit <- struct{}{}
 		fileName := fileInfo.Name()
 
-		vipImg, _ := vips.NewImageFromFile("./demoImg/" + fileName)
-		vipImg.AutoRotate()
-
 		c.Queue(func() (interface{}, error) {
+			defer func() {
+				<-limit
+			}()
+
+			vipImg, _ := vips.NewImageFromFile("./demoImg/" + fileName)
+			vipImg.AutoRotate()
+
 			im, _, _ := vipImg.Export(ep)
 
 			ioutil.WriteFile("./result/"+fileName+".webp", im, 0644)
