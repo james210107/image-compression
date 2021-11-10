@@ -6,8 +6,6 @@ replace github.com/schollz/progressbar/v3 => ../progressbar
 
 require (
 	github.com/davidbyttow/govips v0.0.0-20201026223743-b1b72c7305d9
-	github.com/h2non/filetype v1.1.1
-	github.com/kolesa-team/go-webp v1.0.1
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/schollz/progressbar/v3 v3.8.3
 	github.com/viney-shih/goroutines v1.1.3
