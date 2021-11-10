@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/h2non/filetype"
 	"github.com/kolesa-team/go-webp/encoder"
@@ -60,82 +61,41 @@ func main() {
 	//MainBar := NewBar(int64(len(files)))
 
 	wgA := new(sync.WaitGroup)
-	wgB := new(sync.WaitGroup)
 
 	//p := goroutines.NewPool(20)
 
 	length := len(files)
-	b := goroutines.NewBatch(2, goroutines.WithBatchSize(2))
 	c := goroutines.NewBatch(5, goroutines.WithBatchSize(length))
-	defer b.Close()
+	defer c.Close()
 
-	fileA := files[:length/2]
-	fileB := files[length/2:]
+	for _, fileInfo := range files {
 
-	b.Queue(func() (interface{}, error) {
-		for i, fileInfo := range fileA {
-
-			img, err := ImgDecode(fileInfo)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer output.Close()
-
-			options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 75)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			wgA.Add(1)
-			c.Queue(func() (interface{}, error) {
-				Img2Webp(output, img, options, wgA, WebpBar)
-				return nil, nil
-			})
-			fmt.Println(i)
-			//MainBar.Add(1)
-		}
-		wgA.Wait()
-		return nil, nil
-	})
-
-	b.Queue(func() (interface{}, error) {
-		for i, fileInfo := range fileB {
-
-			img, err := ImgDecode(fileInfo)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer output.Close()
-
-			options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 75)
-			if err != nil {
-				log.Fatalln(err)
-			}
-
-			wgB.Add(1)
-			c.Queue(func() (interface{}, error) {
-				Img2Webp(output, img, options, wgB, WebpBar)
-				return nil, nil
-			})
-			//MainBar.Add(1)
-			fmt.Println(i)
+		img, err := ImgDecode(fileInfo)
+		if err != nil {
+			log.Fatalln(err)
 		}
 
-		wgB.Wait()
-		return nil, nil
-	})
+		output, err := os.Create("./result/" + fileInfo.Name() + ".webp")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer output.Close()
 
-	b.QueueComplete()
+		options, err := encoder.NewLossyEncoderOptions(encoder.PresetPhoto, 50)
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		wgA.Add(1)
+		c.Queue(func() (interface{}, error) {
+			Img2Webp(output, img, options, wgA, WebpBar)
+			return nil, nil
+		})
+		//MainBar.Add(1)
+	}
+	wgA.Wait()
+	c.QueueComplete()
+
 	//wgA.Wait()
 	//wgB.Wait()
 
@@ -150,11 +110,14 @@ func NewBar(length int64) *progressbar.ProgressBar {
 
 func Img2Webp(w io.Writer, src image.Image, options *encoder.Options, wg *sync.WaitGroup, bar *progressbar.ProgressBar) {
 	defer wg.Done()
-	defer bar.Add(1)
+	//defer bar.Add(1)
+	start := time.Now()
 	if err := webp.Encode(w, src, options); err != nil {
 		log.Fatalln(err)
 	}
-
+	dur := time.Now().Sub(start).Seconds()
+	fmt.Printf("%v秒", dur)
+	fmt.Println("")
 }
 
 func ImgDecode(fileInfo os.FileInfo) (image.Image, error) {
@@ -184,6 +147,8 @@ func ImgDecode(fileInfo os.FileInfo) (image.Image, error) {
 		return png.Decode(file)
 	case "webp":
 		return webp.Decode(file, nil)
+	default:
+		fmt.Println(kind.Extension)
 	}
 
 	return nil, nil
