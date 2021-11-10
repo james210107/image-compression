@@ -7,7 +7,6 @@ import (
 
 	vips "github.com/davidbyttow/govips/v2"
 	"github.com/schollz/progressbar/v3"
-	"github.com/viney-shih/goroutines"
 )
 
 func main() {
@@ -21,9 +20,9 @@ func main() {
 	vips.Startup(nil)
 	defer vips.Shutdown()
 
-	c := goroutines.NewBatch(4, goroutines.WithBatchSize(length))
+	//c := goroutines.NewBatch(4, goroutines.WithBatchSize(length))
 	wgA.Add(length)
-	defer c.Close()
+	//defer c.Close()
 
 	ep := vips.NewDefaultWEBPExportParams()
 	ep.Quality = 50
@@ -37,9 +36,10 @@ func main() {
 		limit <- struct{}{}
 		fileName := fileInfo.Name()
 
-		c.Queue(func() (interface{}, error) {
+		go func() (interface{}, error) {
 			defer func() {
 				<-limit
+				wgA.Done()
 			}()
 
 			vipImg, _ := vips.NewImageFromFile("./demoImg/" + fileName)
@@ -54,7 +54,7 @@ func main() {
 			vipImg.Close()
 
 			return nil, nil
-		})
+		}()
 
 	}
 
