@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -13,6 +14,8 @@ import (
 func main() {
 	quality := flag.Int("q", 70, "Quality(int): default 70")
 	worker := flag.Int("w", 4, "Number of Goroutine run at the same time(int): default 4")
+	flag.Parse()
+	fmt.Printf("%d %d", *quality, *worker)
 
 	path, _ := os.Getwd()
 	files, _ := ioutil.ReadDir(path + "/demoImg")
