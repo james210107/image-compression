@@ -14,6 +14,8 @@ import (
 func main() {
 	quality := flag.Int("q", 70, "Quality(int): default 70")
 	worker := flag.Int("w", 4, "Number of Goroutine run at the same time(int): default 4")
+	lossless := flag.Bool("l", false, "lossless")
+	effort := flag.Int("e", 0, "effort")
 	flag.Parse()
 	fmt.Printf("%d %d", *quality, *worker)
 
@@ -24,15 +26,7 @@ func main() {
 
 	wgA := new(sync.WaitGroup)
 
-	vips.Startup(&vips.Config{
-		ConcurrencyLevel: 1,
-		MaxCacheFiles:    0,
-		MaxCacheMem:      512 * 1024,
-		MaxCacheSize:     100,
-		ReportLeaks:      false,
-		CacheTrace:       false,
-		CollectStats:     false,
-	})
+	vips.Startup(nil)
 	defer vips.Shutdown()
 
 	//c := goroutines.NewBatch(4, goroutines.WithBatchSize(length))
@@ -41,8 +35,8 @@ func main() {
 
 	ep := vips.NewDefaultWEBPExportParams()
 	ep.Quality = *quality
-	ep.Lossless = false
-	ep.Effort = 0
+	ep.Lossless = *lossless
+	ep.Effort = *effort
 
 	limit := make(chan struct{}, *worker)
 
