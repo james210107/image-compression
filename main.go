@@ -23,10 +23,10 @@ func main() {
 	lossless := flag.Bool("l", false, "lossless")
 	effort := flag.Int("e", 0, "effort")
 	flag.Parse()
-	fmt.Printf("%d %d", *quality, *worker)
+	fmt.Printf("quality: %d/nworker: %d/n", *quality, *worker)
 
 	path, _ := os.Getwd()
-	files, _ := ioutil.ReadDir(path + "/demoImg")
+	files, _ := ioutil.ReadDir(path + "/in")
 	length := len(files)
 	MainBar := NewBar(int64(length))
 
@@ -35,9 +35,7 @@ func main() {
 	vips.Startup(nil)
 	defer vips.Shutdown()
 
-	//c := goroutines.NewBatch(4, goroutines.WithBatchSize(length))
 	wgA.Add(length)
-	//defer c.Close()
 
 	ep := vips.NewDefaultWEBPExportParams()
 	ep.Quality = *quality
@@ -56,12 +54,12 @@ func main() {
 				wgA.Done()
 			}()
 
-			vipImg, _ := vips.NewImageFromFile("./demoImg/" + fileName)
+			vipImg, _ := vips.NewImageFromFile("./in/" + fileName)
 			vipImg.AutoRotate()
 
 			im, _, _ := vipImg.Export(ep)
 
-			ioutil.WriteFile("./result/"+fileName+".webp", im, 0644)
+			ioutil.WriteFile("./out/"+fileName+".webp", im, 0644)
 
 			vipImg.Close()
 
@@ -71,7 +69,6 @@ func main() {
 	}
 
 	wgA.Wait()
-	//c.QueueComplete()
 }
 
 func NewBar(length int64) *progressbar.ProgressBar {
