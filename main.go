@@ -25,7 +25,13 @@ func main() {
 	wgA := new(sync.WaitGroup)
 
 	vips.Startup(&vips.Config{
-		ConcurrencyLevel: 2,
+		ConcurrencyLevel: 1,
+		MaxCacheFiles:    0,
+		MaxCacheMem:      512 * 1024,
+		MaxCacheSize:     100,
+		ReportLeaks:      false,
+		CacheTrace:       false,
+		CollectStats:     false,
 	})
 	defer vips.Shutdown()
 
