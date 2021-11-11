@@ -8,10 +8,16 @@ import (
 	"sync"
 
 	vips "github.com/davidbyttow/govips/v2"
+	"github.com/pterm/pterm"
 	"github.com/schollz/progressbar/v3"
 )
 
 func main() {
+	// Ω
+	pterm.DefaultBigText.WithLetters(
+		pterm.NewLettersFromStringWithStyle("P", pterm.NewStyle(pterm.FgCyan)),
+		pterm.NewLettersFromStringWithStyle("Term", pterm.NewStyle(pterm.FgLightMagenta))).
+		Render()
 	quality := flag.Int("q", 70, "Quality(int): default 70")
 	worker := flag.Int("w", 4, "Number of Goroutine run at the same time(int): default 4")
 	lossless := flag.Bool("l", false, "lossless")
