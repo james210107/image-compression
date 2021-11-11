@@ -7,7 +7,6 @@ import (
 	"os"
 	"sync"
 	"time"
-	"unsafe"
 
 	vips "github.com/davidbyttow/govips/v2"
 	"github.com/pterm/pterm"
@@ -33,7 +32,7 @@ func main() {
 	lossless := flag.Bool("l", false, "lossless")
 	effort := flag.Int("e", 0, "effort")
 	flag.Parse()
-	fmt.Printf("quality: %d/nworker: %d/n", *quality, *worker)
+	fmt.Printf("quality: %d\nworker: %d\n", *quality, *worker)
 
 	path, _ := os.Getwd()
 	files, _ := ioutil.ReadDir(path + "/in")
@@ -68,8 +67,6 @@ func main() {
 			vipImg.AutoRotate()
 
 			im, _, _ := vipImg.Export(ep)
-			a := unsafe.Sizeof(im)
-			fmt.Println(a)
 
 			ioutil.WriteFile("./out/"+fileName+".webp", im, 0644)
 
