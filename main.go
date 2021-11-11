@@ -28,7 +28,7 @@ func main() {
 	//pterm.NewLettersFromStringWithStyle("-ImageBroker", pterm.NewStyle(pterm.FgRed))).
 	//Render()
 	quality := flag.Int("q", 70, "Quality(int): default 70")
-	worker := flag.Int("w", 4, "Number of Goroutine run at the same time(int): default 4")
+	worker := flag.Int("w", 2, "Number of Goroutine run at the same time(int): default 2")
 	lossless := flag.Bool("l", false, "lossless")
 	effort := flag.Int("e", 0, "effort")
 	flag.Parse()
