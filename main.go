@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 	"time"
+	"unsafe"
 
 	vips "github.com/davidbyttow/govips/v2"
 	"github.com/pterm/pterm"
@@ -67,6 +68,8 @@ func main() {
 			vipImg.AutoRotate()
 
 			im, _, _ := vipImg.Export(ep)
+			a := unsafe.Sizeof(im)
+			fmt.Println(a)
 
 			ioutil.WriteFile("./out/"+fileName+".webp", im, 0644)
 
