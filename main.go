@@ -69,6 +69,29 @@ func main() {
 }
 
 func NewBar(length int64) *progressbar.ProgressBar {
-	bar := progressbar.Default(length)
+	bar := progressbar.NewOptions64(length,
+		// 是否要顯示顏色
+		progressbar.OptionEnableColorCodes(true),
+		// 設置bar條長度
+		//progressbar.OptionSetWidth(50),
+		// 設置title
+		progressbar.OptionSetDescription("壓爆圖片中..."),
+		// 設置bar條樣式
+		progressbar.OptionSetTheme(progressbar.Theme{
+			// 進度條樣式
+			Saucer: "[yellow]-[reset]",
+			// 進度條的頭
+			SaucerHead: "[yellow]─=≡Σ((つ•̀ω•́)つ[reset]",
+			// 進度條還沒到的地方的樣式
+			SaucerPadding: " ",
+			// 進度條左邊框框
+			BarStart: "[",
+			// 進度條右邊框框
+			BarEnd: "]",
+		}),
+		//progressbar.OptionFullWidth(),
+		progressbar.OptionShowIts(),
+		progressbar.OptionSetItsString("張"),
+	)
 	return bar
 }
