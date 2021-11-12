@@ -57,11 +57,7 @@ func main() {
 	fileList := make(map[string]*vips.ImageRef, len(files))
 	for _, fileInfo := range files {
 		fileName := fileInfo.Name()
-		tmp, _ := vips.NewImageFromFile("./in/" + fileName)
-		if tmp == nil {
-			continue
-		}
-		fileList[fileName] = tmp
+		fileList[fileName], _ = vips.NewImageFromFile("./in/" + fileName)
 	}
 
 	start := time.Now()
