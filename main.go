@@ -52,9 +52,8 @@ func main() {
 	limit := make(chan struct{}, *worker)
 
 	start := time.Now()
-	startTimeFormat := start.Local().Format("15_04_05")
-
-	newHeader.Printfln("開始執行: %s", startTimeFormat)
+	floderName := fmt.Sprintf("./out/image_%s", start.Local().Format("15_04_05"))
+	os.Mkdir(floderName, 0777)
 	newHeader.Printfln("開始執行: %s", start.Local().Format(time.RFC3339))
 
 	for _, fileInfo := range files {
@@ -72,7 +71,7 @@ func main() {
 
 			im, _, _ := vipImg.Export(ep)
 
-			ioutil.WriteFile("./out/"+fileName+".webp", im, 0644)
+			ioutil.WriteFile(fmt.Sprintf("%s/%s.webp", floderName, fileName), im, 0644)
 
 			vipImg.Close()
 
