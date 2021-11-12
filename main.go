@@ -14,6 +14,10 @@ import (
 )
 
 func main() {
+
+	floderName := fmt.Sprintf("./out/image_%s", time.Now().Local().Format("15_04_05"))
+	os.Mkdir(floderName, 0777)
+
 	newHeader := pterm.HeaderPrinter{
 		TextStyle:       pterm.NewStyle(pterm.BgCyan),
 		BackgroundStyle: pterm.NewStyle(pterm.FgBlack),
@@ -52,8 +56,6 @@ func main() {
 	limit := make(chan struct{}, *worker)
 
 	start := time.Now()
-	floderName := fmt.Sprintf("./out/image_%s", start.Local().Format("15_04_05"))
-	os.Mkdir(floderName, 0777)
 	newHeader.Printfln("開始執行: %s", start.Local().Format(time.RFC3339))
 
 	for _, fileInfo := range files {
@@ -67,6 +69,10 @@ func main() {
 			}()
 
 			vipImg, _ := vips.NewImageFromFile("./in/" + fileName)
+			if vipImg == nil {
+				return nil, nil
+			}
+
 			vipImg.AutoRotate()
 
 			im, _, _ := vipImg.Export(ep)
