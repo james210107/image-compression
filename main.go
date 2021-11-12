@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	vips "github.com/davidbyttow/govips/v2"
 	"github.com/pterm/pterm"
 	"github.com/schollz/progressbar/v3"
@@ -66,6 +67,8 @@ func main() {
 
 	for fileName, vipImg := range fileList {
 
+		spew.Dump(fileName)
+		//spew.Dump(vipImg)
 		thisVipImg := vipImg
 		thisFileName := fileName
 		limit <- struct{}{}
