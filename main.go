@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	start := time.Now()
 	newHeader := pterm.HeaderPrinter{
 		TextStyle:       pterm.NewStyle(pterm.BgCyan),
 		BackgroundStyle: pterm.NewStyle(pterm.FgBlack),
@@ -22,12 +21,11 @@ func main() {
 	}
 
 	// Print header.
-	newHeader.Println("開始執行")
 	//pterm.DefaultBigText.WithLetters(
 	//pterm.NewLettersFromStringWithStyle("Tyr", pterm.NewStyle(pterm.FgLightBlue)),
 	//pterm.NewLettersFromStringWithStyle("-ImageBroker", pterm.NewStyle(pterm.FgRed))).
 	//Render()
-	quality := flag.Int("q", 70, "Quality(int): default 70")
+	quality := flag.Int("q", 50, "Quality(int): default 50")
 	worker := flag.Int("w", 2, "Number of Goroutine run at the same time(int): default 2")
 	lossless := flag.Bool("l", false, "lossless")
 	effort := flag.Int("e", 0, "effort")
@@ -52,6 +50,12 @@ func main() {
 	ep.Effort = *effort
 
 	limit := make(chan struct{}, *worker)
+
+	start := time.Now()
+	startTimeFormat := start.Local().Format("15_04_05")
+
+	newHeader.Printfln("開始執行: %s", startTimeFormat)
+	newHeader.Printfln("開始執行: %s", start.Local().Format(time.RFC3339))
 
 	for _, fileInfo := range files {
 		limit <- struct{}{}
@@ -80,7 +84,7 @@ func main() {
 	wgA.Wait()
 	end := time.Now()
 
-	newHeader.Printfln(fmt.Sprintf("開始時間:  %s\n結束時間:  %v\n總花費秒數:%v秒", start.Local().Format(time.RFC3339), end.Local().Format(time.RFC3339), end.Sub(start).Seconds()))
+	newHeader.Printfln("開始時間:  %s\n結束時間:  %v\n總花費秒數:%v秒", start.Local().Format(time.RFC3339), end.Local().Format(time.RFC3339), end.Sub(start).Seconds())
 }
 
 func NewBar(length int64) *progressbar.ProgressBar {
