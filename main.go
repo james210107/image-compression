@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	vips "github.com/davidbyttow/govips/v2"
 	"github.com/pterm/pterm"
 	"github.com/schollz/progressbar/v3"
@@ -66,11 +65,6 @@ func main() {
 	newHeader.Printfln("開始執行: %s", start.Local().Format(time.RFC3339))
 
 	for fileName, vipImg := range fileList {
-
-		spew.Dump(fileName)
-		//spew.Dump(vipImg)
-		thisVipImg := vipImg
-		thisFileName := fileName
 		limit <- struct{}{}
 
 		go func() (interface{}, error) {
@@ -79,13 +73,13 @@ func main() {
 				wgA.Done()
 			}()
 
-			thisVipImg.AutoRotate()
+			vipImg.AutoRotate()
 
-			im, _, _ := thisVipImg.Export(ep)
+			im, _, _ := vipImg.Export(ep)
 
-			ioutil.WriteFile(fmt.Sprintf("%s/%s.webp", floderName, thisFileName), im, 0644)
+			ioutil.WriteFile(fmt.Sprintf("%s/%s.webp", floderName, fileName), im, 0644)
 
-			thisVipImg.Close()
+			vipImg.Close()
 
 			return nil, nil
 		}()
