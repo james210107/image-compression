@@ -32,6 +32,9 @@ func main() {
 	flag.Parse()
 	fmt.Printf("quality: %d\nworker: %d\n", *quality, *worker)
 
+	floderName := fmt.Sprintf("./out/image_%s", time.Now().Local().Format("15_04_05"))
+	os.Mkdir(floderName, 0777)
+
 	path, _ := os.Getwd()
 	files, _ := ioutil.ReadDir(path + "/in")
 	length := len(files)
@@ -51,14 +54,18 @@ func main() {
 
 	limit := make(chan struct{}, *worker)
 
+	fileList := make(map[string]*vips.ImageRef, len(files))
+	for _, fileInfo := range files {
+		fileName := fileInfo.Name()
+		fileList[fileName], _ = vips.NewImageFromFile("./in/" + fileName)
+	}
+
 	start := time.Now()
-	floderName := fmt.Sprintf("./out/image_%s", start.Local().Format("15_04_05"))
-	os.Mkdir(floderName, 0777)
+
 	newHeader.Printfln("開始執行: %s", start.Local().Format(time.RFC3339))
 
-	for _, fileInfo := range files {
+	for fileName, vipImg := range fileList {
 		limit <- struct{}{}
-		fileName := fileInfo.Name()
 
 		go func() (interface{}, error) {
 			defer func() {
@@ -66,7 +73,6 @@ func main() {
 				wgA.Done()
 			}()
 
-			vipImg, _ := vips.NewImageFromFile("./in/" + fileName)
 			vipImg.AutoRotate()
 
 			im, _, _ := vipImg.Export(ep)
